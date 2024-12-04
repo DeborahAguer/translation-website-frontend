@@ -1,11 +1,28 @@
 import React from 'react';
-import TranslationForm from './components/TranslationForm';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { TranslationProvider } from './context/TranslationContext';
+import Header from './components/Header';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <TranslationForm />
-    </div>
+    <AuthProvider>
+      <TranslationProvider>
+        <Router>
+          <Header />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Routes>
+        </Router>
+      </TranslationProvider>
+    </AuthProvider>
   );
 }
 

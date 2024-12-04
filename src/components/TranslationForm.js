@@ -1,106 +1,257 @@
+// import React, { useState } from 'react';
+// import { addTranslation } from '../services/translationService';
+
+// const TranslationForm = ({ onAddTranslation }) => {
+//   const [formData, setFormData] = useState({
+//     wordOriginal: '',
+//     wordTranslated: '',
+//     languageFrom: '',
+//     languageTo: '',
+//   });
+
+//   const [error, setError] = useState('');
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData({
+//       ...formData,
+//       [name]: value,
+//     });
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setError(''); // Clear any previous errors
+
+//     const { wordOriginal, wordTranslated, languageFrom, languageTo } = formData;
+
+
+//     if (!wordOriginal || !wordTranslated || !languageFrom || !languageTo) {
+//       setError('All fields are required.');
+//       return;
+//     }
+
+//     try {
+//       await addTranslation(formData); // Call API service
+//       onAddTranslation(formData); // Trigger callback to update parent state
+//       setFormData({ wordOriginal: '', wordTranslated: '', languageFrom: '', languageTo: '' }); // Reset form
+//     } catch (error) {
+//       setError('Failed to add translation. Please try again.');
+//     }
+//   };
+
+//   return (
+//     <div className="translation-form">
+//       <h2>Add New Translation</h2>
+//       {error && <p className="error">{error}</p>}
+//       <form onSubmit={handleSubmit}>
+//         <div>
+//           <label htmlFor="wordOriginal">Original Word</label>
+//           <input
+//             type="text"
+//             id="wordOriginal"
+//             name="wordOriginal"
+//             value={formData.wordOriginal}
+//             onChange={handleChange}
+//             placeholder="Enter original word"
+//             required
+//           />
+//         </div>
+//         <div>
+//           <label htmlFor="wordTranslated">Translated Word</label>
+//           <input
+//             type="text"
+//             id="wordTranslated"
+//             name="wordTranslated"
+//             value={formData.wordTranslated}
+//             onChange={handleChange}
+//             placeholder="Enter translated word"
+//             required
+//           />
+//         </div>
+//         <div>
+//           <label htmlFor="languageFrom">Language From</label>
+//           <input
+//             type="text"
+//             id="languageFrom"
+//             name="languageFrom"
+//             value={formData.languageFrom}
+//             onChange={handleChange}
+//             placeholder="Enter original language"
+//             required
+//           />
+//         </div>
+//         <div>
+//           <label htmlFor="languageTo">Language To</label>
+//           <input
+//             type="text"
+//             id="languageTo"
+//             name="languageTo"
+//             value={formData.languageTo}
+//             onChange={handleChange}
+//             placeholder="Enter target language"
+//             required
+//           />
+//         </div>
+//         <button type="submit">Add Translation</button>
+//       </form>
+//     </div>
+//   );
+// };
+
+// export default TranslationForm;
 import React, { useState } from 'react';
-import axios from 'axios';
+import { addTranslation } from '../services/translationService';
+import './TranslationForm.css'; // Importing the styles
 
-const TranslationPage = () => {
-  const [text, setText] = useState('');
-  const [translatedText, setTranslatedText] = useState('');
-  const [sourceLang, setSourceLang] = useState('en');
-  const [targetLang, setTargetLang] = useState('fr');
+const TranslationForm = ({ onAddTranslation }) => {
+  const [formData, setFormData] = useState({
+    wordOriginal: '',
+    wordTranslated: '',
+    languageFrom: '',
+    languageTo: '',
+  });
 
-  const handleTranslate = async (e) => {
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccessMessage(''); // Clear any previous success messages
+
+    const { wordOriginal, wordTranslated, languageFrom, languageTo } = formData;
+
+    if (!wordOriginal || !wordTranslated || !languageFrom || !languageTo) {
+      setError('All fields are required.');
+      return;
+    }
+
     try {
-      const response = await axios.post('http://localhost:5000/translate', {
-        sourceLanguage: sourceLang,
-        targetLanguage: targetLang,
-        text,
-      });
-      setTranslatedText(response.data.translation);
+      await addTranslation(formData); // Call API service
+      onAddTranslation(formData); // Trigger callback to update parent state
+      setFormData({ wordOriginal: '', wordTranslated: '', languageFrom: '', languageTo: '' }); // Reset form
+      setSuccessMessage('Translation added successfully!');
     } catch (error) {
-      console.error("Translation error:", error);
+      setError('Failed to add translation. Please try again.');
     }
   };
 
-  return (
-    <div className="w-full bg-gray-200 p-8 flex flex-col items-center">
-      {/* Welcome Section */}
-      <div className="flex items-center mb-6">
-        <img
-          src="logo.jpg"
-          alt="Dinkaslate Logo"
-          className="h-12 w-auto"
-        />
-        <h1 className="text-6xl font-bold ml-4">Dinkaslate</h1>
-      </div>
-      <p className="text-lg mb-6 text-center">
-        Welcome to Dinkaslate! Our app provides seamless translation services to bridge language barriers. 
-        Start translating text effortlessly.
-      </p>
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  };
 
-      {/* Translation Form */}
-      <div className="max-w-xl w-full bg-white rounded-lg shadow-lg p-8 mt-10">
-        <h2 className="text-3xl font-bold mb-6 text-center">Translation App</h2>
-        <form onSubmit={handleTranslate}>
-          <div className="mb-6">
-            <label htmlFor="textToTranslate" className="block text-lg font-medium">
-              Text to Translate:
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
+
+  return (
+    <div className="main-container">
+      <header className="header">
+        <h1>Welcome</h1>
+        <div className="auth-buttons">
+          {isLoggedIn ? (
+            <button className="logout-btn" onClick={handleLogout}>
+              Log Out
+            </button>
+          ) : (
+            <>
+              <button className="login-btn" onClick={handleLogin}>
+                Log In
+              </button>
+              <button className="register-btn">
+                Register
+              </button>
+            </>
+          )}
+        </div>
+      </header>
+
+      <div className="content-container">
+        <section className="form-section">
+          <h2>Add a New Translation</h2>
+          {successMessage && <p className="success-message">{successMessage}</p>}
+          {error && <p className="error-message">{error}</p>}
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="wordOriginal">Original Word</label>
               <input
                 type="text"
-                id="textToTranslate" // Added id
-                name="textToTranslate" // Added name
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                className="mt-2 block w-full p-4 border rounded-lg"
-                placeholder="Enter text"
+                id="wordOriginal"
+                name="wordOriginal"
+                value={formData.wordOriginal}
+                onChange={handleChange}
+                placeholder="Enter the word in the original language"
+                required
               />
-            </label>
-          </div>
-          <div className="flex space-x-4 mb-6">
-            <div className="w-1/2">
-              <label htmlFor="sourceLanguage" className="block text-lg font-medium">Source Language:</label>
-              <select
-                id="sourceLanguage" 
-                name="sourceLanguage" 
-                value={sourceLang}
-                onChange={(e) => setSourceLang(e.target.value)}
-                className="mt-2 block w-full p-4 border rounded-lg"
-              >
-                <option value="en">English</option>
-                <option value="dk">Dinka</option>
-                <option value="kis">Kiswahili</option>
-              </select>
             </div>
-            <div className="w-1/2">
-              <label htmlFor="targetLanguage" className="block text-lg font-medium">Target Language:</label>
-              <select
-                id="targetLanguage"
-                name="targetLanguage" 
-                value={targetLang}
-                onChange={(e) => setTargetLang(e.target.value)}
-                className="mt-2 block w-full p-4 border rounded-lg"
-              >
-                <option value="en">English</option>
-                <option value="dk">Dinka</option>
-                <option value="kis">Kiswahili</option>
-              </select>
+
+            <div className="form-group">
+              <label htmlFor="wordTranslated">Translated Word</label>
+              <input
+                type="text"
+                id="wordTranslated"
+                name="wordTranslated"
+                value={formData.wordTranslated}
+                onChange={handleChange}
+                placeholder="Enter the translated word"
+                required
+              />
             </div>
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold text-lg"
-          >
-            Translate
-          </button>
-        </form>
-        {translatedText && (
-          <div className="mt-6 p-6 bg-gray-100 rounded-lg">
-            <h2 className="font-semibold text-xl">Translation:</h2>
-            <p className="mt-2 text-lg">{translatedText}</p>
-          </div>
-        )}
+
+            <div className="form-group">
+              <label htmlFor="languageFrom">Language From</label>
+              <input
+                type="text"
+                id="languageFrom"
+                name="languageFrom"
+                value={formData.languageFrom}
+                onChange={handleChange}
+                placeholder="Enter the language of the original word"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="languageTo">Language To</label>
+              <input
+                type="text"
+                id="languageTo"
+                name="languageTo"
+                value={formData.languageTo}
+                onChange={handleChange}
+                placeholder="Enter the language to which it is translated"
+                required
+              />
+            </div>
+
+            <div className="form-actions">
+              <button type="submit" className="submit-btn">Add Translation</button>
+            </div>
+          </form>
+        </section>
+
+        <section className="translations-section">
+          <h3>Translations</h3>
+          {/* You can map through translations and display them here */}
+          <ul>
+            <li>Translation 1</li>
+            <li>Translation 2</li>
+          </ul>
+        </section>
       </div>
     </div>
   );
 };
 
-export default TranslationPage;
+export default TranslationForm;
