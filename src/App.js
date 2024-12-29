@@ -13,7 +13,7 @@ function App() {
     <AuthProvider>
       <TranslationProvider>
         <Router>
-          <Header />
+          <Header /> {/* Render header on all pages */}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -27,3 +27,4 @@ function App() {
 }
 
 export default App;
+

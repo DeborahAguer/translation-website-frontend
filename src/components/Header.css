@@ -1,50 +1,64 @@
 .header {
-    background-color: #007bff;
-    padding: 20px;
-    color: white;
-  }
-  
-  .header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .logo h1 {
-    margin: 0;
-    font-size: 1.8rem;
-  }
-  
-  .nav ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-  }
-  
-  .nav ul li {
-    margin-left: 20px;
-  }
-  
-  .nav ul li a {
-    color: white;
-    text-decoration: none;
-    font-size: 1.1rem;
-  }
-  
-  .nav ul li a:hover {
-    text-decoration: underline;
-  }
-  
-  .logout-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.1rem;
-    cursor: pointer;
-  }
-  
-  .logout-btn:hover {
-    text-decoration: underline;
-  }
-  
+  background-color: #007bff;
+  padding: 20px;
+  color: white;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  text-align: center; /* Corrected to 'text-align' */
+}
+
+.logo h1 a {
+  color: white; /* Default logo color */
+  text-decoration: none; /* Remove underline */
+  transition: color 0.3s ease; /* Smooth color transition */
+}
+
+.logo h1 a:hover {
+  color: #ffd700; /* Change color to gold on hover */
+}
+
+.nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.nav ul li {
+  margin-left: 20px;
+}
+
+.nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  transition: color 0.3s ease; /* Add smooth color transition */
+}
+
+.nav ul li a:hover {
+  text-decoration: underline;
+  color: #ffd700; /* Optional: Change link color on hover */
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.3s ease; /* Add smooth transition */
+}
+
+.logout-btn:hover {
+  text-decoration: underline;
+  color: #ffd700; /* Optional: Change button color on hover */
+}
