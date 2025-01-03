@@ -1,153 +1,102 @@
-// import React, { useContext, useState } from 'react';
-// import { AuthContext } from '../context/AuthContext';
-// import { TranslationContext } from '../context/TranslationContext';
-
-// const Dashboard = () => {
-//   const { user, handleLogout } = useContext(AuthContext);
-//   const { translations, handleAddTranslation } = useContext(TranslationContext);
-  
-//   const [newTranslation, setNewTranslation] = useState({
-//     wordOriginal: '',
-//     wordTranslated: '',
-//     languageFrom: '',
-//     languageTo: ''
-//   });
-
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setNewTranslation({ ...newTranslation, [name]: value });
-//   };
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     handleAddTranslation(newTranslation);
-//     setNewTranslation({
-//       wordOriginal: '',
-//       wordTranslated: '',
-//       languageFrom: '',
-//       languageTo: ''
-//     });
-//   };
-
-//   return (
-//     <div>
-//       <h2>Dashboard</h2>
-//       {user ? (
-//         <div>
-//           <p>Welcome, {user.username}</p>
-//           <button onClick={handleLogout}>Logout</button>
-//         </div>
-//       ) : (
-//         <p>You are not logged in.</p>
-//       )}
-
-//       <form onSubmit={handleSubmit}>
-//         <input
-//           type="text"
-//           name="wordOriginal"
-//           value={newTranslation.wordOriginal}
-//           onChange={handleChange}
-//           placeholder="Original Word"
-//         />
-//         <input
-//           type="text"
-//           name="wordTranslated"
-//           value={newTranslation.wordTranslated}
-//           onChange={handleChange}
-//           placeholder="Translated Word"
-//         />
-//         <input
-//           type="text"
-//           name="languageFrom"
-//           value={newTranslation.languageFrom}
-//           onChange={handleChange}
-//           placeholder="From Language"
-//         />
-//         <input
-//           type="text"
-//           name="languageTo"
-//           value={newTranslation.languageTo}
-//           onChange={handleChange}
-//           placeholder="To Language"
-//         />
-//         <button type="submit">Add Translation</button>
-//       </form>
-
-//       <h3>Translations</h3>
-//       <ul>
-//         {translations.map((translation) => (
-//           <li key={translation._id}>
-//             {translation.wordOriginal} - {translation.wordTranslated}
-//           </li>
-//         ))}
-//       </ul>
-//     </div>
-//   );
-// };
-
-// export default Dashboard;
 import React, { useState, useContext } from 'react';
 import { TranslationContext } from '../context/TranslationContext';  // Assuming you have TranslationContext
 import './Dashboard.css';  // Import the CSS file
+import { getTranslations } from '../services/translationService';
 
 const TranslationPage = () => {
-  // State to handle form data
-  const [formData, setFormData] = useState({
+  // State for the Add Translation Form
+  const [addFormData, setAddFormData] = useState({
     wordOriginal: '',
     wordTranslated: '',
     languageFrom: '',
     languageTo: '',
   });
 
+  // State for the Search Form
+  const [searchFormData, setSearchFormData] = useState({
+    wordOriginal: '',
+    languageFrom: '',
+    languageTo: '',
+  });
+
   const [searchResults, setSearchResults] = useState(null);  // To store search results
-  const [errorMessage, setErrorMessage] = useState('');
+  const [searchErrorMessage, setSearchErrorMessage] = useState('');  // Separate error for search
   const [successMessage, setSuccessMessage] = useState('');
+  const [addErrorMessage, setAddErrorMessage] = useState('');  // Separate error for adding translation
 
-  // Destructuring TranslationContext
-  const { handleAddTranslation, searchTranslation } = useContext(TranslationContext);
+  // Destructuring only handleAddTranslation from TranslationContext
+  const { handleAddTranslation } = useContext(TranslationContext); 
 
-  // Handle input change for form fields
-  const handleChange = (e) => {
+  // Handle input change for the Add Translation Form
+  const handleAddChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setAddFormData({
+      ...addFormData,
+      [name]: value,
+    });
+  };
+
+  // Handle input change for the Search Form
+  const handleSearchChange = (e) => {
+    const { name, value } = e.target;
+    setSearchFormData({
+      ...searchFormData,
       [name]: value,
     });
   };
 
   // Handle search form submission
-  const handleSearchSubmit = (e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
-    const { wordOriginal, languageFrom, languageTo } = formData;
-
-    // Search for existing translation in the system
-    const result = searchTranslation(wordOriginal, languageFrom, languageTo);
-    if (result) {
-      setSearchResults(result);
-      setErrorMessage(''); // Clear error if translation is found
-    } else {
-      setSearchResults(null);
-      setErrorMessage('Translation not found. You can add it.');
-    }
-  };
-
-  // Handle adding a new translation
-  const handleAddSubmit = (e) => {
-    e.preventDefault();
-    const { wordOriginal, wordTranslated, languageFrom, languageTo } = formData;
-
+    const { wordOriginal, wordTranslated, languageFrom, languageTo } = addFormData;
+  
     // Validate form before submitting
     if (!wordOriginal || !wordTranslated || !languageFrom || !languageTo) {
-      setErrorMessage('All fields are required.');
+      setAddErrorMessage('All fields are required.');
       return;
     }
-
-    handleAddTranslation(formData);  // Add new translation via context
-    setSuccessMessage('Translation added successfully!');
-    setErrorMessage('');  // Clear any previous error
-    setFormData({ wordOriginal: '', wordTranslated: '', languageFrom: '', languageTo: '' });  // Reset form data
+  
+    try {
+      const token = localStorage.getItem('token');  // Assuming token is used
+      await handleAddTranslation(addFormData, token);  // Add new translation via context
+      setSuccessMessage('Translation added successfully!');
+      setAddErrorMessage('');  // Clear any previous error
+      setAddFormData({ wordOriginal: '', wordTranslated: '', languageFrom: '', languageTo: '' });  // Reset form data
+  
+      // Log the translations to check if the new translation was added
+      console.log('New translation added: ', addFormData);
+    } catch (error) {
+      setAddErrorMessage('Error adding translation.');
+    }
   };
-
+  
+  const handleSearchSubmit = async (e) => {
+    e.preventDefault();
+    const { wordOriginal, languageFrom, languageTo } = searchFormData;
+  
+    // Clear previous search results and error messages
+    setSearchResults(null);
+    setSearchErrorMessage('');
+  
+    try {
+      // Search for existing translation in the system
+      const result = await getTranslations(wordOriginal, languageFrom, languageTo);
+  
+      // Log the result to see if the search function is working
+      console.log('Search result: ', result);
+  
+      if (result) {
+        setSearchResults(result);
+        setSearchErrorMessage(''); // Clear error if translation is found
+      } else {
+        setSearchResults(null);
+        setSearchErrorMessage('Translation not found. You can add it.');
+      }
+    } catch (error) {
+      setSearchErrorMessage('Error searching translation.');
+    }
+  };
+  
   return (
     <div>
       <h2>Translation Page</h2>
@@ -160,8 +109,8 @@ const TranslationPage = () => {
             <label htmlFor="languageFrom">Language From:</label>
             <select
               name="languageFrom"
-              value={formData.languageFrom}
-              onChange={handleChange}
+              value={searchFormData.languageFrom}
+              onChange={handleSearchChange}
               required
             >
               <option value="">Select Language</option>
@@ -175,8 +124,8 @@ const TranslationPage = () => {
             <label htmlFor="languageTo">Language To:</label>
             <select
               name="languageTo"
-              value={formData.languageTo}
-              onChange={handleChange}
+              value={searchFormData.languageTo}
+              onChange={handleSearchChange}
               required
             >
               <option value="">Select Language</option>
@@ -191,8 +140,8 @@ const TranslationPage = () => {
             <input
               type="text"
               name="wordOriginal"
-              value={formData.wordOriginal}
-              onChange={handleChange}
+              value={searchFormData.wordOriginal}
+              onChange={handleSearchChange}
               placeholder="Enter the word to search"
               required
             />
@@ -202,15 +151,16 @@ const TranslationPage = () => {
         </fieldset>
       </form>
 
-      {/* Display the translation result or error */}
+      {/* Display search error message */}
+      {searchErrorMessage && <p>{searchErrorMessage}</p>}
+
+      {/* Display the translation result if found */}
       {searchResults && (
         <div>
           <h4>Translation Found:</h4>
           <p>{searchResults.wordOriginal} - {searchResults.wordTranslated}</p>
         </div>
       )}
-
-      {errorMessage && <p>{errorMessage}</p>}
 
       {/* Add a new translation form */}
       <form onSubmit={handleAddSubmit}>
@@ -221,8 +171,8 @@ const TranslationPage = () => {
             <input
               type="text"
               name="wordOriginal"
-              value={formData.wordOriginal}
-              onChange={handleChange}
+              value={addFormData.wordOriginal}
+              onChange={handleAddChange}
               placeholder="Enter the word in the original language"
               required
             />
@@ -233,8 +183,8 @@ const TranslationPage = () => {
             <input
               type="text"
               name="wordTranslated"
-              value={formData.wordTranslated}
-              onChange={handleChange}
+              value={addFormData.wordTranslated}
+              onChange={handleAddChange}
               placeholder="Enter the translated word"
               required
             />
@@ -244,8 +194,8 @@ const TranslationPage = () => {
             <label htmlFor="languageFrom">Language From:</label>
             <select
               name="languageFrom"
-              value={formData.languageFrom}
-              onChange={handleChange}
+              value={addFormData.languageFrom}
+              onChange={handleAddChange}
               required
             >
               <option value="">Select Language</option>
@@ -259,8 +209,8 @@ const TranslationPage = () => {
             <label htmlFor="languageTo">Language To:</label>
             <select
               name="languageTo"
-              value={formData.languageTo}
-              onChange={handleChange}
+              value={addFormData.languageTo}
+              onChange={handleAddChange}
               required
             >
               <option value="">Select Language</option>
@@ -274,9 +224,9 @@ const TranslationPage = () => {
         </fieldset>
       </form>
 
-      {/* Display success and error messages */}
+      {/* Display success and error messages for adding translation */}
       {successMessage && <p>{successMessage}</p>}
-      {errorMessage && <p>{errorMessage}</p>}
+      {addErrorMessage && <p>{addErrorMessage}</p>}
     </div>
   );
 };

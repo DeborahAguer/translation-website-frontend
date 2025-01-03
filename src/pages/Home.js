@@ -6,7 +6,7 @@ const Home = () => {
   return (
     <div className="home">
       <header className="home-header">
-        <h1>Welcome to the Translation App</h1>
+        <h1>Welcome to the Translation Website</h1>
         <p>Your go-to app for managing and searching translations effortlessly.</p>
       </header>
 
